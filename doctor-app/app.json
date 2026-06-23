@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Telemed Doctor",
+    "slug": "telemed-doctor",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "backgroundColor": "#FFFFFF",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.telemed.doctor",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera for video consultations with your patients.",
+        "NSMicrophoneUsageDescription": "This app uses the microphone for audio during video consultations."
+      }
+    },
+    "android": {
+      "package": "com.telemed.doctor",
+      "permissions": ["CAMERA", "RECORD_AUDIO", "INTERNET"]
+    }
+  }
+}
