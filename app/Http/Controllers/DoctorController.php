@@ -96,4 +96,49 @@ class DoctorController extends Controller
             'data' => new DoctorResource($profile),
         ]);
     }
+
+    /**
+     * Update the logged-in doctor's weekly availability slots.
+     * POST /api/me/doctor-profile/availabilities
+     */
+    public function updateAvailabilities(Request $request): JsonResponse
+    {
+        $user = Auth::guard('api')->user();
+
+        $profile = DoctorProfile::where('user_id', $user->id)->first();
+        if (! $profile) {
+            return response()->json(['message' => 'No doctor profile found for this account.'], 404);
+        }
+
+        $request->validate([
+            'availabilities' => 'required|array',
+            'availabilities.*.day_of_week' => 'required|integer|between:0,6',
+            'availabilities.*.start_time' => 'required|date_format:H:i',
+            'availabilities.*.end_time' => 'required|date_format:H:i|after:availabilities.*.start_time',
+            'availabilities.*.slot_duration_minutes' => 'integer|min:10|max:120',
+        ]);
+
+        \DB::transaction(function () use ($profile, $request) {
+            // Delete all existing availabilities for this doctor
+            $profile->availabilities()->delete();
+
+            // Insert new ones
+            foreach ($request->input('availabilities') as $availData) {
+                $profile->availabilities()->create([
+                    'day_of_week' => $availData['day_of_week'],
+                    'start_time' => $availData['start_time'],
+                    'end_time' => $availData['end_time'],
+                    'slot_duration_minutes' => $availData['slot_duration_minutes'] ?? 30,
+                ]);
+            }
+        });
+
+        // Load fresh profile with new availabilities
+        $profile->load('availabilities');
+
+        return response()->json([
+            'message' => 'Availability updated successfully.',
+            'data' => new DoctorResource($profile),
+        ]);
+    }
 }

@@ -23,6 +23,9 @@ class AppointmentResource extends JsonResource
             'start_time'         => $this->start_time,
             'end_time'           => $this->end_time,
             'agora_channel_name' => $this->agora_channel_name,
+            'agora_token'        => $this->agora_channel_name && auth()->check()
+                ? $this->generateAgoraToken()
+                : null,
             'notes'              => $this->notes,
             'prescription'       => $this->prescription,
 
@@ -36,10 +39,24 @@ class AppointmentResource extends JsonResource
             // Compact doctor summary (only when the "doctor" relation is loaded).
             // The doctor's name lives on the related user account (doctor.user).
             'doctor' => $this->whenLoaded('doctor', fn () => [
-                'id'   => $this->doctor->id,
-                'name' => $this->doctor->user?->name,
-                'fee'  => $this->doctor->consultation_fee,
+                'id'      => $this->doctor->id,
+                'user_id' => $this->doctor->user_id,
+                'name'    => $this->doctor->user?->name,
+                'fee'     => $this->doctor->consultation_fee,
             ]),
         ];
+    }
+
+    /**
+     * Generate Agora RTC token defensively.
+     */
+    private function generateAgoraToken(): ?string
+    {
+        try {
+            return app(\App\Services\AgoraTokenService::class)->generateToken($this->agora_channel_name, auth()->id());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to generate Agora token for appointment resource: ' . $e->getMessage());
+            return null;
+        }
     }
 }

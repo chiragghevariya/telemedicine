@@ -4,6 +4,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\SpecialtyController;
+use App\Http\Controllers\CallController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,6 +44,7 @@ Route::middleware('auth:api')->group(function () {
 
     // -- the logged-in doctor's own profile (used by the doctor app) --
     Route::get('/me/doctor-profile', [DoctorController::class, 'myProfile']);
+    Route::post('/me/doctor-profile/availabilities', [DoctorController::class, 'updateAvailabilities']);
 
     // -- appointments --
     Route::get('/appointments',                 [AppointmentController::class, 'index']);
@@ -50,4 +52,12 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/appointments/{id}',            [AppointmentController::class, 'show'])->whereNumber('id');
     Route::post('/appointments/{id}/cancel',    [AppointmentController::class, 'cancel'])->whereNumber('id');
     Route::post('/appointments/{id}/complete',  [AppointmentController::class, 'complete'])->whereNumber('id');
+
+    // -- real-time calling --
+    Route::post('/users/push-tokens',           [CallController::class, 'updatePushTokens']);
+    Route::post('/calls/initiate',              [CallController::class, 'initiate']);
+    Route::post('/calls/accept',                [CallController::class, 'accept']);
+    Route::post('/calls/decline',               [CallController::class, 'decline']);
+    Route::post('/calls/end',                   [CallController::class, 'end']);
+    Route::post('/calls/missed',                [CallController::class, 'missed']);
 });

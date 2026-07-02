@@ -1,15 +1,14 @@
 // Home tab: greeting, search bar, specialty grid (6), and featured doctors.
-
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
-  View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator,
+  View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, SafeAreaView, StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import api from '../config/api';
 import { useAuth } from '../store/AuthContext';
 import DoctorCard from '../components/DoctorCard';
-import { colors, radius, spacing } from '../config/theme';
+import { colors, fonts, radius, spacing } from '../config/theme';
 import { specialtyEmoji } from '../utils/helpers';
 
 export default function HomeScreen({ navigation }) {
@@ -20,7 +19,6 @@ export default function HomeScreen({ navigation }) {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Add a "log out" button to the header.
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -31,9 +29,8 @@ export default function HomeScreen({ navigation }) {
     });
   }, [navigation, logout]);
 
-  // Load specialties + a few doctors when the screen first opens.
   useEffect(() => {
-    let mounted = true; // guard against setting state after the screen unmounts
+    let mounted = true;
     const load = async () => {
       try {
         const [specRes, docRes] = await Promise.all([
@@ -45,7 +42,7 @@ export default function HomeScreen({ navigation }) {
           setDoctors(docRes.data.data);
         }
       } catch (e) {
-        // Keep the UI usable even if loading fails.
+        // Keep UI usable
       } finally {
         if (mounted) setLoading(false);
       }
@@ -54,7 +51,6 @@ export default function HomeScreen({ navigation }) {
     return () => { mounted = false; };
   }, []);
 
-  // Submit the search -> go to the doctor list with the typed text.
   const onSearch = () => {
     const term = search.trim();
     if (term.length === 0) return;
@@ -69,83 +65,131 @@ export default function HomeScreen({ navigation }) {
     );
   }
 
+  const patientName = user?.name ? user.name.split(' ')[0] : 'Patient';
+
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={{ padding: spacing.md }}>
-      {/* Greeting */}
-      <Text style={styles.hello}>Hello{user?.name ? `, ${user.name.split(' ')[0]}` : ''} 👋</Text>
-      <Text style={styles.subtitle}>How are you feeling today?</Text>
+    <SafeAreaView style={styles.safe}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <ScrollView style={styles.screen} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
+        {/* Hello Banner */}
+        <View style={styles.banner}>
+          <Text style={styles.hello}>Hello, {patientName} 👋</Text>
+          <Text style={styles.subtitle}>How are you feeling today?</Text>
+        </View>
 
-      {/* Search bar */}
-      <View style={styles.searchBox}>
-        <Ionicons name="search" size={20} color={colors.textMuted} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search doctors by name"
-          placeholderTextColor={colors.textMuted}
-          value={search}
-          onChangeText={setSearch}
-          onSubmitEditing={onSearch}
-          returnKeyType="search"
-        />
-      </View>
+        {/* Search Box */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBox}>
+            <Ionicons name="search" size={20} color={colors.textMuted} style={{ marginRight: 8 }} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search doctors by name..."
+              placeholderTextColor={colors.textMuted}
+              value={search}
+              onChangeText={setSearch}
+              onSubmitEditing={onSearch}
+              returnKeyType="search"
+            />
+          </View>
+        </View>
 
-      {/* Specialty grid */}
-      <Text style={styles.sectionTitle}>Specialties</Text>
-      <View style={styles.grid}>
-        {specialties.map((s) => (
-          <TouchableOpacity
-            key={s.id}
-            style={styles.specialtyCard}
-            onPress={() => navigation.navigate('DoctorList', { specialtyId: s.id, specialtyName: s.name })}
-          >
-            <Text style={styles.specialtyEmoji}>{specialtyEmoji(s.name)}</Text>
-            <Text style={styles.specialtyName} numberOfLines={1}>{s.name}</Text>
+        {/* Specialties Grid */}
+        <Text style={styles.sectionTitle}>Medical Specialties</Text>
+        <View style={styles.grid}>
+          {specialties.map((s) => (
+            <TouchableOpacity
+              key={s.id}
+              style={styles.specialtyCard}
+              onPress={() => navigation.navigate('DoctorList', { specialtyId: s.id, specialtyName: s.name })}
+            >
+              <View style={styles.emojiWrapper}>
+                <Text style={styles.specialtyEmoji}>{specialtyEmoji(s.name)}</Text>
+              </View>
+              <Text style={styles.specialtyName} numberOfLines={1}>{s.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Featured Doctors Header */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Top Rated Doctors</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('DoctorList', {})}>
+            <Text style={styles.seeAll}>See all</Text>
           </TouchableOpacity>
-        ))}
-      </View>
+        </View>
 
-      {/* Featured doctors */}
-      <View style={styles.sectionRow}>
-        <Text style={styles.sectionTitle}>Top doctors</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('DoctorList', {})}>
-          <Text style={styles.seeAll}>See all</Text>
-        </TouchableOpacity>
-      </View>
-
-      {doctors.map((d) => (
-        <DoctorCard
-          key={d.id}
-          doctor={d}
-          onPress={() => navigation.navigate('DoctorProfile', { doctorId: d.id })}
-        />
-      ))}
-    </ScrollView>
+        {/* Doctors list */}
+        <View style={styles.doctorsList}>
+          {doctors.map((d) => (
+            <DoctorCard
+              key={d.id}
+              doctor={d}
+              onPress={() => navigation.navigate('DoctorProfile', { doctorId: d.id })}
+            />
+          ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1 },
+  scrollContent: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.xxl },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background },
-  hello: { fontSize: 22, fontWeight: '800', color: colors.text },
-  subtitle: { fontSize: 14, color: colors.textMuted, marginTop: 2, marginBottom: spacing.md },
+  banner: {
+    marginBottom: spacing.md,
+  },
+  hello: { fontSize: 24, ...fonts.bold, color: colors.text },
+  subtitle: { fontSize: 14, ...fonts.medium, color: colors.textMuted, marginTop: 4 },
+  searchContainer: {
+    marginVertical: spacing.md,
+  },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
-    borderWidth: 1,
+    backgroundColor: '#FAFCFF',
+    borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    marginBottom: spacing.lg,
+    height: 48,
   },
-  searchInput: { flex: 1, paddingVertical: spacing.sm + 2, marginLeft: spacing.sm, fontSize: 15, color: colors.text },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
+  searchInput: { 
+    flex: 1, 
+    fontSize: 15, 
+    ...fonts.regular, 
+    color: colors.text 
+  },
+  sectionTitle: { 
+    fontSize: 16, 
+    ...fonts.bold, 
+    color: colors.text, 
+    marginTop: spacing.lg, 
+    marginBottom: spacing.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   sectionRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    marginTop: spacing.lg, marginBottom: spacing.sm,
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'flex-end',
+    marginTop: spacing.lg, 
+    marginBottom: spacing.sm,
   },
-  seeAll: { color: colors.primary, fontWeight: '600' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  seeAll: { 
+    fontSize: 14, 
+    ...fonts.bold, 
+    color: colors.primary,
+  },
+  grid: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    justifyContent: 'space-between',
+    marginTop: spacing.xs,
+  },
   specialtyCard: {
     width: '31%',
     backgroundColor: colors.primaryLight,
@@ -153,7 +197,26 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
     marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(2, 119, 189, 0.08)',
   },
-  specialtyEmoji: { fontSize: 28 },
-  specialtyName: { fontSize: 12, color: colors.text, marginTop: 6, fontWeight: '500' },
+  emojiWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  specialtyEmoji: { fontSize: 22 },
+  specialtyName: { 
+    fontSize: 12, 
+    color: colors.text, 
+    marginTop: 4, 
+    ...fonts.semiBold 
+  },
+  doctorsList: {
+    marginTop: spacing.xs,
+  },
 });

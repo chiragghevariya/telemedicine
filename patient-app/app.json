@@ -2,22 +2,49 @@
   "expo": {
     "name": "Telemed Patient",
     "slug": "telemed-patient",
+    "scheme": "telemed-patient",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "backgroundColor": "#FFFFFF",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.telemed.patient",
+      "bundleIdentifier": "com.chirag.telemedpatient",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera for video consultations with your doctor.",
-        "NSMicrophoneUsageDescription": "This app uses the microphone for audio during video consultations."
+        "NSMicrophoneUsageDescription": "This app uses the microphone for audio during video consultations.",
+        "UIBackgroundModes": [
+          "audio",
+          "voip",
+          "remote-notification"
+        ]
       }
     },
     "android": {
       "package": "com.telemed.patient",
-      "permissions": ["CAMERA", "RECORD_AUDIO", "INTERNET"]
-    }
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "INTERNET"
+      ]
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "ndkVersion": "27.1.12297006"
+          }
+        }
+      ],
+      "@react-native-firebase/app",
+      "./plugins/withCallKeep",
+      "./plugins/withNotifeeRepo"
+    ]
   }
 }

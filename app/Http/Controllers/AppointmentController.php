@@ -18,12 +18,10 @@ use Illuminate\Support\Str;
 
 class AppointmentController extends Controller
 {
-    /**
-     * Laravel "injects" a SlotService instance here automatically, so we can
-     * reuse the slot logic in both the slots() and store() methods.
-     */
-    public function __construct(protected SlotService $slotService)
-    {
+    public function __construct(
+        protected SlotService $slotService,
+        protected \App\Services\PushNotificationService $pushService
+    ) {
     }
 
     /**
@@ -111,6 +109,24 @@ class AppointmentController extends Controller
             Log::warning('Appointment confirmation email failed: '.$e->getMessage());
         }
 
+        // 8) Send Push Notification to the Doctor.
+        try {
+            $doctorUser = $appointment->doctor->user;
+             if ($doctorUser && $doctorUser->fcm_token) {
+                 $this->pushService->sendAndroidNotificationMessage(
+                     $doctorUser->fcm_token,
+                     'New Appointment Booked',
+                     'Patient ' . Auth::guard('api')->user()->name . ' booked an appointment on ' . $date . ' at ' . $start,
+                     [
+                         'event' => 'appointment_booked',
+                         'appointment_id' => (string) $appointment->id,
+                     ]
+                 );
+             }
+        } catch (\Throwable $e) {
+            Log::warning('FCM notification for new appointment failed: '.$e->getMessage());
+        }
+
         return response()->json([
             'message' => 'Appointment booked successfully.',
             'data'    => new AppointmentResource($appointment),
@@ -173,9 +189,47 @@ class AppointmentController extends Controller
 
         $appointment->update(['status' => Appointment::STATUS_CANCELLED]);
 
+        // Send Push Notification to the other party
+        try {
+            $currentUser = Auth::guard('api')->user();
+            $appointment->load(['patient', 'doctor.user']);
+            
+            if ($currentUser->id === $appointment->patient_id) {
+                // Cancelled by Patient -> notify Doctor
+                $doctorUser = $appointment->doctor->user;
+                if ($doctorUser && $doctorUser->fcm_token) {
+                    $this->pushService->sendAndroidNotificationMessage(
+                        $doctorUser->fcm_token,
+                        'Appointment Cancelled by Patient',
+                        'Patient ' . $currentUser->name . ' cancelled the appointment scheduled for ' . $appointment->appointment_date?->format('Y-m-d'),
+                        [
+                            'event' => 'appointment_cancelled',
+                            'appointment_id' => (string) $appointment->id,
+                        ]
+                    );
+                }
+            } else {
+                // Cancelled by Doctor -> notify Patient
+                $patientUser = $appointment->patient;
+                if ($patientUser && $patientUser->fcm_token) {
+                    $this->pushService->sendAndroidNotificationMessage(
+                        $patientUser->fcm_token,
+                        'Appointment Cancelled by Doctor',
+                        'Doctor ' . $currentUser->name . ' cancelled your appointment scheduled for ' . $appointment->appointment_date?->format('Y-m-d'),
+                        [
+                            'event' => 'appointment_cancelled',
+                            'appointment_id' => (string) $appointment->id,
+                        ]
+                    );
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('FCM notification for appointment cancellation failed: '.$e->getMessage());
+        }
+
         return response()->json([
             'message' => 'Appointment cancelled.',
-            'data'    => new AppointmentResource($appointment->load(['patient', 'doctor.user'])),
+            'data'    => new AppointmentResource($appointment),
         ]);
     }
 
@@ -208,6 +262,26 @@ class AppointmentController extends Controller
             'status'       => Appointment::STATUS_COMPLETED,
             'prescription' => $data['prescription'],
         ]);
+
+        // Send Push Notification to the Patient
+        try {
+            $appointment->load('patient');
+            $patientUser = $appointment->patient;
+            if ($patientUser && $patientUser->fcm_token) {
+                $doctorUser = Auth::guard('api')->user();
+                $this->pushService->sendAndroidNotificationMessage(
+                    $patientUser->fcm_token,
+                    'Consultation Completed & Prescription Ready',
+                    'Doctor ' . $doctorUser->name . ' completed your consultation and uploaded a prescription. Open the app to view details.',
+                    [
+                        'event' => 'appointment_completed',
+                        'appointment_id' => (string) $appointment->id,
+                    ]
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::warning('FCM notification for completed appointment failed: '.$e->getMessage());
+        }
 
         return response()->json([
             'message' => 'Appointment completed and prescription saved.',

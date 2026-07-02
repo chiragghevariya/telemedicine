@@ -6,12 +6,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ---------------------------------------------------------------------------
 // IMPORTANT: set this to where your Laravel API is reachable FROM THE PHONE.
-//   - Physical phone (Expo Go):  your computer's LAN IP, e.g. 192.168.1.50
+//   - Physical phone (dev build): your computer's LAN IP, e.g. 192.168.1.50
 //   - Android emulator:          10.0.2.2
 //   - iOS simulator:             127.0.0.1
 // Run Laravel with:  php artisan serve --host=0.0.0.0
 // ---------------------------------------------------------------------------
-export const API_HOST = '192.168.1.100'; // <-- CHANGE ME
+export const API_HOST = '192.168.1.3'; // <-- CHANGE ME
 export const API_BASE_URL = `http://${API_HOST}:8000/api`;
 
 export const TOKEN_KEY = 'doctor_token'; // separate key from the patient app

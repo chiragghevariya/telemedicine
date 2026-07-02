@@ -33,10 +33,20 @@ export const spacing = {
   md: 16,
   lg: 24,
   xl: 32,
+  xxl: 48,
 };
 
 export const radius = {
   sm: 8,
   md: 12,
   lg: 16,
+  pill: 9999,
+};
+
+export const fonts = {
+  regular: { fontFamily: 'System', fontWeight: '400' },
+  medium: { fontFamily: 'System', fontWeight: '500' },
+  semiBold: { fontFamily: 'System', fontWeight: '600' },
+  bold: { fontFamily: 'System', fontWeight: '700' },
+  heavy: { fontFamily: 'System', fontWeight: '800' },
 };

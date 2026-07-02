@@ -30,6 +30,7 @@ class User extends Authenticatable implements JWTSubject
         'phone',
         'avatar',
         'fcm_token',
+        'apns_voip_token',
         // NOTE: 'role' is deliberately NOT mass-assignable. It drives authorization,
         // so we never let it be set straight from request data — it's assigned
         // explicitly in code (see AuthController::register and DoctorSeeder).

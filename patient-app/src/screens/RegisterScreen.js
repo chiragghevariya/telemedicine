@@ -1,14 +1,12 @@
-// Patient sign-up. Sends name/email/phone/password to the backend (role is
-// forced to "patient" inside AuthContext.register).
-
+// Patient sign-up.
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView,
+  View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, StatusBar,
 } from 'react-native';
 import { useAuth } from '../store/AuthContext';
 import Input from '../components/Input';
 import PrimaryButton from '../components/PrimaryButton';
-import { colors, spacing } from '../config/theme';
+import { colors, fonts, radius, spacing } from '../config/theme';
 import { errorMessage } from '../utils/helpers';
 
 export default function RegisterScreen() {
@@ -20,13 +18,11 @@ export default function RegisterScreen() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Helper to update one field of the form.
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
 
   const onRegister = async () => {
     setError('');
 
-    // Basic checks before calling the API (the backend validates too).
     if (!form.name || !form.email || !form.password) {
       setError('Please fill in your name, email and password.');
       return;
@@ -49,7 +45,6 @@ export default function RegisterScreen() {
         password: form.password,
         password_confirmation: form.password_confirmation,
       });
-      // Success -> RootNavigator switches to the main app automatically.
     } catch (e) {
       setError(errorMessage(e, 'Could not create your account. Please try again.'));
     } finally {
@@ -58,57 +53,128 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Create your account</Text>
+    <SafeAreaView style={styles.safe}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContainer} 
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.headerContainer}>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Sign up to connect with qualified medical practitioners</Text>
+          </View>
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+          <View style={styles.card}>
+            {error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.error}>{error}</Text>
+              </View>
+            ) : null}
 
-        <Input label="Full name" placeholder="Jane Doe" value={form.name} onChangeText={set('name')} />
-        <Input
-          label="Email"
-          placeholder="you@example.com"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={form.email}
-          onChangeText={set('email')}
-        />
-        <Input
-          label="Phone (optional)"
-          placeholder="+1 555 123 4567"
-          keyboardType="phone-pad"
-          value={form.phone}
-          onChangeText={set('phone')}
-        />
-        <Input
-          label="Password"
-          placeholder="At least 8 characters"
-          secureTextEntry
-          value={form.password}
-          onChangeText={set('password')}
-        />
-        <Input
-          label="Confirm password"
-          placeholder="Re-enter password"
-          secureTextEntry
-          value={form.password_confirmation}
-          onChangeText={set('password_confirmation')}
-        />
+            <Input label="Full Name" placeholder="Jane Doe" value={form.name} onChangeText={set('name')} />
+            <Input
+              label="Email Address"
+              placeholder="you@example.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={form.email}
+              onChangeText={set('email')}
+            />
+            <Input
+              label="Phone Number"
+              placeholder="e.g. +1 555 123 4567"
+              keyboardType="phone-pad"
+              value={form.phone}
+              onChangeText={set('phone')}
+            />
+            <Input
+              label="Password"
+              placeholder="Minimum 8 characters"
+              secureTextEntry
+              value={form.password}
+              onChangeText={set('password')}
+            />
+            <Input
+              label="Confirm Password"
+              placeholder="Re-enter password"
+              secureTextEntry
+              value={form.password_confirmation}
+              onChangeText={set('password_confirmation')}
+            />
 
-        <PrimaryButton title="Sign up" onPress={onRegister} loading={loading} style={{ marginTop: spacing.sm }} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <PrimaryButton 
+              title="Create Account" 
+              onPress={onRegister} 
+              loading={loading} 
+              style={styles.registerBtn} 
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.background },
-  container: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg },
-  title: {
-    fontSize: 24, fontWeight: '800', color: colors.text, marginBottom: spacing.lg, textAlign: 'center',
+  safe: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
+  scrollContainer: { 
+    flexGrow: 1, 
+    justifyContent: 'center', 
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
   },
-  error: { color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
+  headerContainer: {
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+    marginTop: spacing.md,
+  },
+  title: { 
+    fontSize: 26, 
+    ...fonts.bold, 
+    color: colors.text, 
+    textAlign: 'center',
+  },
+  subtitle: { 
+    fontSize: 14, 
+    ...fonts.medium, 
+    color: colors.textMuted, 
+    textAlign: 'center', 
+    marginTop: 6,
+    paddingHorizontal: spacing.md,
+  },
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#94A3B8',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
+    marginBottom: spacing.lg,
+  },
+  errorContainer: {
+    backgroundColor: '#FDF2F2',
+    borderLeftWidth: 4,
+    borderLeftColor: colors.danger,
+    padding: spacing.md,
+    borderRadius: radius.sm,
+    marginBottom: spacing.md,
+  },
+  error: { 
+    color: '#9B1C1C', 
+    fontSize: 14, 
+    ...fonts.medium,
+  },
+  registerBtn: {
+    marginTop: spacing.md,
+  },
 });

@@ -6,13 +6,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ---------------------------------------------------------------------------
 // IMPORTANT: set this to where your Laravel API is reachable FROM THE PHONE.
-//   - Physical phone (Expo Go):        your computer's LAN IP, e.g. 192.168.1.50
+//   - Physical phone (dev build):      your computer's LAN IP, e.g. 192.168.1.50
 //   - Android emulator:                10.0.2.2
 //   - iOS simulator:                   127.0.0.1
 // Find your computer's IP with `ipconfig` (Windows) / `ifconfig` (Mac/Linux),
 // and make sure `php artisan serve --host=0.0.0.0` is running so the phone can reach it.
 // ---------------------------------------------------------------------------
-export const API_HOST = '192.168.1.100'; // <-- CHANGE ME
+export const API_HOST = '192.168.1.3'; // <-- CHANGE ME
 export const API_BASE_URL = `http://${API_HOST}:8000/api`;
 
 // The key we use to store the token in AsyncStorage (phone storage).

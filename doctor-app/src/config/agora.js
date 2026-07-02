@@ -5,7 +5,7 @@
 //    doctor and patient join the same channel for an appointment.
 // 3) Keep the project in "Testing mode" for the demo (empty token).
 
-export const AGORA_APP_ID = 'PASTE_YOUR_AGORA_APP_ID_HERE';
+export const AGORA_APP_ID = '237469db7b2e44d1a908884ca5c14c02';
 
 // Empty token works only while your Agora project is in testing mode.
 export const AGORA_TOKEN = '';

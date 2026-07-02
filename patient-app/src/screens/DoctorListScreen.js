@@ -1,17 +1,15 @@
-// Lists doctors, filtered by specialty chips and/or a search term.
-// Opened from Home (with a specialty or search) or "See all".
-
+// Lists doctors, filtered by specialty chips.
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator,
+  View, Text, FlatList, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, SafeAreaView, StatusBar,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import api from '../config/api';
 import DoctorCard from '../components/DoctorCard';
-import { colors, radius, spacing } from '../config/theme';
+import { colors, fonts, radius, spacing } from '../config/theme';
 
 export default function DoctorListScreen({ route, navigation }) {
-  // Values passed in from the previous screen (any of these may be undefined).
   const initialSpecialtyId = route.params?.specialtyId ?? null;
   const specialtyName = route.params?.specialtyName ?? null;
   const search = route.params?.search ?? '';
@@ -21,25 +19,25 @@ export default function DoctorListScreen({ route, navigation }) {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // If we arrived from a specialty tile, show its name as the screen title.
   useLayoutEffect(() => {
-    if (specialtyName) navigation.setOptions({ title: specialtyName });
+    if (specialtyName) {
+      navigation.setOptions({ title: specialtyName });
+    } else {
+      navigation.setOptions({ title: 'Find Doctors' });
+    }
   }, [specialtyName, navigation]);
 
-  // Load the specialty list once (for the filter chips).
   useEffect(() => {
     api.get('/specialties')
       .then((res) => setSpecialties(res.data.data))
       .catch(() => {});
   }, []);
 
-  // (Re)load doctors whenever the selected specialty changes.
   useEffect(() => {
-    let mounted = true; // guard against setting state after leaving the screen
+    let mounted = true;
     const load = async () => {
       setLoading(true);
       try {
-        // Ask for a big page so the demo shows everyone (no infinite scroll here).
         const params = { per_page: 50 };
         if (selectedSpecialtyId) params.specialty_id = selectedSpecialtyId;
         if (search) params.search = search;
@@ -54,19 +52,21 @@ export default function DoctorListScreen({ route, navigation }) {
     };
     load();
     return () => { mounted = false; };
-  }, [selectedSpecialtyId]); // search comes from params and doesn't change here
+  }, [selectedSpecialtyId]);
 
   return (
-    <View style={styles.screen}>
-      {/* Filter chips: "All" + each specialty */}
-      <View>
+    <SafeAreaView style={styles.safe}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      
+      {/* Specialty Filter Scroll Bar */}
+      <View style={styles.filterContainer}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.chipsRow}
         >
           <Chip
-            label="All"
+            label="All Specialities"
             active={!selectedSpecialtyId}
             onPress={() => setSelectedSpecialtyId(null)}
           />
@@ -90,7 +90,7 @@ export default function DoctorListScreen({ route, navigation }) {
         <FlatList
           data={doctors}
           keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={{ padding: spacing.md }}
+          contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
             <DoctorCard
               doctor={item}
@@ -98,19 +98,22 @@ export default function DoctorListScreen({ route, navigation }) {
             />
           )}
           ListEmptyComponent={
-            <Text style={styles.empty}>No doctors found.</Text>
+            <View style={styles.emptyContainer}>
+              <Ionicons name="people-outline" size={48} color={colors.textMuted} />
+              <Text style={styles.empty}>No doctors found for this selection.</Text>
+            </View>
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
-// A single filter chip.
 function Chip({ label, active, onPress }) {
   return (
     <TouchableOpacity
       onPress={onPress}
+      activeOpacity={0.8}
       style={[styles.chip, active && styles.chipActive]}
     >
       <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
@@ -119,23 +122,58 @@ function Chip({ label, active, onPress }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  chipsRow: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
+  filterContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingBottom: spacing.xs,
+  },
+  chipsRow: { 
+    paddingHorizontal: spacing.lg, 
+    paddingVertical: spacing.sm 
+  },
   chip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 999,
+    paddingVertical: spacing.sm - 2,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: colors.border,
     marginRight: spacing.sm,
-    backgroundColor: colors.white,
+    backgroundColor: colors.card,
   },
   chipActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  chipText: { color: colors.text, fontSize: 13 },
-  chipTextActive: { color: colors.white, fontWeight: '700' },
-  empty: { textAlign: 'center', color: colors.textMuted, marginTop: spacing.xl },
+  chipText: { 
+    color: colors.textMuted, 
+    fontSize: 13, 
+    ...fonts.semiBold 
+  },
+  chipTextActive: { 
+    color: colors.white, 
+    ...fonts.bold 
+  },
+  listContent: { 
+    paddingHorizontal: spacing.lg, 
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
+  },
+  emptyContainer: { 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    paddingVertical: spacing.xxl * 2,
+  },
+  empty: { 
+    fontSize: 14, 
+    ...fonts.medium, 
+    color: colors.textMuted, 
+    marginTop: spacing.md, 
+    textAlign: 'center' 
+  },
 });

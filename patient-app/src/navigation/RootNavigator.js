@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '../store/AuthContext';
 import { colors } from '../config/theme';
+import { navigationRef } from './navigationRef';
 
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
@@ -60,7 +61,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: colors.primary },

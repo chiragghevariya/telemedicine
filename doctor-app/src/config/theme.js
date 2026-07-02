@@ -1,27 +1,57 @@
-// Central colors & spacing for the DOCTOR app.
-// White background, TEAL accent (#00796B) — visually distinct from the patient app's blue.
+// Modern, premium color palette and typography for the Telemedicine Doctor App.
+// Clean medical blues, slates, and soft grays.
 
 export const colors = {
-  primary: '#00796B',      // teal accent (buttons, active states)
-  primaryDark: '#00695C',  // pressed/darker teal
-  primaryLight: '#E0F2F1', // very light teal (chips, backgrounds)
+  primary: '#0F62FE',       // Premium IBM Medical Blue
+  primaryDark: '#002D9C',   // Deep Cobalt Blue
+  primaryLight: '#EDF5FF',  // Soft ice blue for background highlights
 
-  background: '#FFFFFF',
-  card: '#FFFFFF',
-  border: '#E5E7EB',
+  secondary: '#00BAB3',     // Clean medical turquoise
+  secondaryLight: '#E0F8F7',
 
-  text: '#1A1A1A',
-  textMuted: '#6B7280',
+  background: '#F4F7FC',    // Super clean modern light gray-blue
+  card: '#FFFFFF',          // Clean card white
+  border: '#E2E8F0',        // Slate border
 
-  // Appointment status badge colors
-  statusPending: '#F59E0B',
-  statusConfirmed: '#00796B',
-  statusCompleted: '#10B981',
-  statusCancelled: '#EF4444',
-
+  text: '#1C2A38',          // Deep slate for high readability
+  textMuted: '#6B7A8A',     // Slate gray for subtexts
   white: '#FFFFFF',
-  danger: '#EF4444',
+
+  // Status indicators
+  statusPending: '#FF9500',   // Warm amber
+  statusConfirmed: '#00BAB3', // Turquoise
+  statusCompleted: '#198754', // Emerald green
+  statusCancelled: '#DC3545', // Danger red
+
+  danger: '#DC3545',
+  success: '#198754',
+  warning: '#FF9500',
+  info: '#0F62FE',
+
+  // Shadows
+  shadowColor: '#0A1828',
 };
 
-export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
-export const radius = { sm: 8, md: 12, lg: 16 };
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 40,
+};
+
+export const radius = {
+  sm: 6,
+  md: 12,
+  lg: 20,
+  pill: 9999,
+};
+
+export const fonts = {
+  regular: { fontFamily: 'System', fontWeight: '400' },
+  medium: { fontFamily: 'System', fontWeight: '500' },
+  semiBold: { fontFamily: 'System', fontWeight: '600' },
+  bold: { fontFamily: 'System', fontWeight: '700' },
+  heavy: { fontFamily: 'System', fontWeight: '800' },
+};

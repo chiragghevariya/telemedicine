@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api, { TOKEN_KEY, setUnauthorizedHandler } from '../config/api';
+import CallManager from '../services/CallManager';
 
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
@@ -17,6 +18,16 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     setUnauthorizedHandler(() => setUser(null));
   }, []);
+
+  // Sync Push Token whenever user authentication changes
+  useEffect(() => {
+    if (user) {
+      CallManager.syncPushToken();
+      // If the app was launched by accepting a killed/screen-off incoming-call
+      // notification, resume it now that the user (and their id) is loaded.
+      CallManager.checkPendingCall();
+    }
+  }, [user]);
 
   // On startup, load the user if a token is saved (and it's a doctor).
   useEffect(() => {

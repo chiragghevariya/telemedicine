@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '../store/AuthContext';
 import { colors } from '../config/theme';
+import { navigationRef } from './navigationRef';
 
 import SplashScreen from '../screens/SplashScreen';
 import DoctorLoginScreen from '../screens/DoctorLoginScreen';
@@ -21,11 +22,12 @@ import AppointmentListScreen from '../screens/AppointmentListScreen';
 import AppointmentDetailScreen from '../screens/AppointmentDetailScreen';
 import VideoCallScreen from '../screens/VideoCallScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import AvailabilityEditorScreen from '../screens/AvailabilityEditorScreen';
+import PatientListScreen from '../screens/PatientListScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// The bottom tabs shown once a doctor is logged in.
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -35,14 +37,19 @@ function MainTabs() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarIcon: ({ color, size }) => {
-          // Choose an icon per tab.
-          const icons = { Dashboard: 'grid', Appointments: 'list', Profile: 'person' };
+          const icons = { 
+            Dashboard: 'grid', 
+            Appointments: 'calendar', 
+            Patients: 'people',
+            Profile: 'person' 
+          };
           return <Ionicons name={icons[route.name] || 'ellipse'} size={size} color={color} />;
         },
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
       <Tab.Screen name="Appointments" component={AppointmentListScreen} />
+      <Tab.Screen name="Patients" component={PatientListScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
@@ -56,7 +63,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: colors.primary },
@@ -69,6 +76,7 @@ export default function RootNavigator() {
             <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
             <Stack.Screen name="AppointmentDetail" component={AppointmentDetailScreen} options={{ title: 'Appointment' }} />
             <Stack.Screen name="VideoCall" component={VideoCallScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="AvailabilityEditor" component={AvailabilityEditorScreen} options={{ title: 'Manage Schedule' }} />
           </>
         ) : (
           // ---- Logged OUT ----

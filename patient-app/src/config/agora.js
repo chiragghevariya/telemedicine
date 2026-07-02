@@ -6,7 +6,7 @@
 //    can join with an empty token. For production you must generate a per-channel
 //    RTC token from a small server endpoint and pass it instead of ''.
 
-export const AGORA_APP_ID = 'PASTE_YOUR_AGORA_APP_ID_HERE';
+export const AGORA_APP_ID = '237469db7b2e44d1a908884ca5c14c02';
 
 // Empty token works only while your Agora project is in testing mode.
 export const AGORA_TOKEN = '';
